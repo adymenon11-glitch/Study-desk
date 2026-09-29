@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Study Desk</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1C2255">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F1F4FA;--surface:#fff;--ink:#1C2255;--muted:#5B6390;--line:#D5DBEE;--hl:#FFE066;--hl-break:#A9EFD3;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12152B;--surface:#1B1F3D;--ink:#ECEEFF;--muted:#A3AAD6;--line:#2C3160;--hl:rgba(255,214,64,.32);--hl-break:rgba(110,225,185,.3)}}
+:root[data-theme="dark"]{--bg:#12152B;--surface:#1B1F3D;--ink:#ECEEFF;--muted:#A3AAD6;--line:#2C3160;--hl:rgba(255,214,64,.32);--hl-break:rgba(110,225,185,.3)}
+*{box-sizing:border-box}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;height:100%;display:flex;flex-direction:column;background:var(--bg);color:var(--ink);font:16px/1.5 'Bricolage Grotesque',system-ui,-apple-system,sans-serif}
+[hidden]{display:none!important}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px 6px}
+h1{font-size:22px;font-weight:800;margin:0;letter-spacing:-.01em}
+.mini{font-variant-numeric:tabular-nums;font-weight:600;background:none;border:1px solid var(--line);border-radius:999px;padding:4px 12px}
+body[data-tab="focus"] #mini{visibility:hidden}
+.tabs{display:flex;gap:8px;padding:8px 20px 0}
+.tabs button{flex:1;padding:9px 6px;border:1px solid var(--line);border-radius:12px;background:var(--surface);font-weight:600;font-size:14px}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+main{flex:1;min-height:0;display:flex;flex-direction:column}
+.panel{flex:1;min-height:0;display:flex;flex-direction:column;padding:16px 20px 20px;width:100%;max-width:640px;margin:0 auto}
+#focus{align-items:center;justify-content:center;text-align:center;gap:18px;overflow:auto}
+.modes{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.modes button{padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:none}
+.modes button[aria-pressed="true"]{border-color:var(--ink);font-weight:600}
+.time{position:relative;isolation:isolate;display:inline-block;font-size:clamp(64px,24vw,128px);font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums;letter-spacing:-.02em;padding:0 .08em}
+.time::before{content:"";position:absolute;z-index:-1;left:0;bottom:.12em;height:.42em;width:calc(100% * var(--left,1));background:var(--hl);border-radius:.08em;transform:skewX(-6deg);transition:width .25s linear}
+body[data-mode="break"] .time::before{background:var(--hl-break)}
+.status{margin:0;color:var(--muted);min-height:1.5em}
+.controls{display:flex;gap:10px}
+.controls button{padding:12px 20px;border-radius:12px;border:1px solid var(--line);background:var(--surface)}
+.dots{display:flex;gap:8px}
+.dots i{width:12px;height:12px;border-radius:50%;border:2px solid var(--ink)}
+.dots i.on{background:var(--ink)}
+.count{margin:0;color:var(--muted);font-size:14px}
+.msgs{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding-bottom:12px}
+.empty{margin:auto 0}
+.empty p{font-size:20px;font-weight:600;margin:0 0 14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips button{padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface)}
+.b{max-width:88%;padding:10px 14px;border-radius:16px;white-space:pre-wrap;overflow-wrap:anywhere}
+.b.me{align-self:flex-end;background:var(--ink);color:var(--bg);border-bottom-right-radius:4px}
+.b.bot{align-self:flex-start;background:var(--surface);border:1px solid var(--line);border-bottom-left-radius:4px}
+.b.err{color:var(--muted)}
+.composer{display:flex;gap:8px;align-items:flex-end}
+.composer textarea{flex:1;resize:none;font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.composer button{padding:12px 18px;border-radius:12px;border:0}
+.composer button:disabled{opacity:.5}
+button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink);font-weight:600}
+#start{overflow:auto;gap:14px}
+#start h2{font-size:26px;font-weight:800;line-height:1.2;margin:0;letter-spacing:-.01em}
+#start p{margin:0;color:var(--muted)}
+#start .lbl{font-weight:600;color:var(--ink);margin-top:6px}
+#start .hint{font-size:14px}
+#start .msg{color:var(--ink);font-weight:600;min-height:1.5em}
+#start input{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;width:100%}
+#start .primary{align-self:flex-start;padding:12px 22px;border-radius:12px;border:0}
+.pick{display:flex;flex-wrap:wrap;gap:8px}
+.pick button{padding:10px 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface)}
+.pick button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink);font-weight:600}
+#start{padding-top:max(32px,8vh)}
+#app{flex:1;min-height:0;display:flex;flex-direction:column}
+.hr{display:flex;gap:8px}
+.subj{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.subj button{padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:none;font-size:14px}
+.subj button[aria-pressed="true"]{border-color:var(--ink);font-weight:600;background:var(--surface)}
+.composer #mic{background:var(--surface);border:1px solid var(--line)}
+.composer #mic[aria-pressed="true"]{background:var(--hl);border-color:var(--ink)}
+.vmsg{margin:0 0 8px;font-size:14px;color:var(--ink)}
+.vmsg:empty{display:none}
+.say{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--muted);margin-top:8px}
+.move{width:100%;max-width:420px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;display:grid;grid-template-columns:auto 1fr;gap:4px 14px;align-items:center}
+.reps{font-size:44px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;background:linear-gradient(transparent 58%,var(--hl) 58%)}
+.mv{display:flex;flex-direction:column}
+.mv b{font-size:18px}
+.mv span{color:var(--muted);font-size:14px}
+.mvb{grid-column:1/-1;display:flex;gap:8px;margin-top:8px}
+.mvb button{padding:10px 16px;border-radius:12px;border:1px solid var(--line)}
+.mvb button:not(.primary){background:none}
+.mvb button.primary{border-color:var(--ink)}
+.mvn{grid-column:1/-1;margin:4px 0 0;font-size:13px;color:var(--muted)}
+.move.stack{display:flex;flex-direction:column;gap:10px;text-align:center}
+.move.stack .mvb{justify-content:center;flex-wrap:wrap}
+#gc{width:100%;aspect-ratio:2/1;background:var(--bg);border-radius:10px;display:block;touch-action:manipulation}
+.sumbar{position:sticky;top:0;background:var(--bg);padding:6px 0 10px;font-weight:600;color:var(--muted);border-bottom:1px solid var(--line);margin-bottom:10px}
+.addrow{display:flex;gap:6px;margin-bottom:12px}
+.addrow input{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 10px}
+.addrow input:first-child{flex:1}
+.addrow input:last-of-type{width:64px}
+.addrow button{border-radius:10px;border:0;padding:9px 14px}
+.tasks{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
+.task{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.task.done .tname{text-decoration:line-through;color:var(--muted)}
+.task.over{border-color:#E08A3C}
+.task input[type=checkbox]{width:20px;height:20px;flex:none}
+.task .tname{flex:1;text-align:left;overflow-wrap:anywhere}
+.task .ttime{color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums;flex:none}
+.task button{flex:none;background:none;border:1px solid var(--line);border-radius:8px;padding:5px 9px;font-size:13px}
+@media (prefers-reduced-motion:reduce){.time::before{transition:none}}
+</style>
+</head>
+<body data-tab="focus" data-mode="focus">
+<section id="start" class="panel">
+    <h2>Welcome to Study Desk</h2>
+    <p>Tell us a bit about you so your study friend and your focus sessions fit your syllabus.</p>
+    <div class="lbl" id="cur-lbl">Which curriculum are you in?</div>
+    <div class="pick" id="pick" role="group" aria-labelledby="cur-lbl">
+      <button>ICSE</button><button>CBSE</button><button>IGCSE</button><button>International</button><button>Other</button>
+    </div>
+    <p class="msg" id="msg" aria-live="polite"></p>
+    <button class="primary" id="save">Start studying</button>
+  </section>
+<div id="app" hidden>
+<header><h1>Study Desk</h1><span class="hr"><button class="mini" id="mini" aria-label="Back to timer">25:00</button><button class="mini" id="me" aria-label="Change curriculum"></button></span></header>
+<div class="tabs" role="tablist">
+  <button role="tab" id="tab-focus" aria-selected="true">Focus</button>
+  <button role="tab" id="tab-tutor" aria-selected="false">Study friend</button>
+  <button role="tab" id="tab-list" aria-selected="false">Checklist</button>
+</div>
+<main>
+  
+  <section id="focus" class="panel">
+    <p class="status">What are you studying?</p>
+    <div class="subj" id="subj" role="group" aria-label="Subject"></div>
+    <div class="modes" role="group" aria-label="Timer mode">
+      <button data-m="focus">Focus 25</button><button data-m="short">Short break 5</button><button data-m="long">Long break 15</button>
+    </div>
+    <div><span class="time" id="time">25:00</span></div>
+    <p class="status" id="status" aria-live="polite">Ready when you are.</p>
+    <div class="move" id="move" hidden>
+      <div class="reps" id="reps">5</div>
+      <div class="mv"><b id="mvname">push-ups</b><span id="mvhint">Wall push-ups work too.</span></div>
+      <div class="mvb"><button class="primary" id="mvdone">Done</button><button id="mvnext">Another</button><button id="mvskip">Skip</button></div>
+      <p class="mvn">Skip anything that doesn't feel right.</p>
+    </div>
+    <div class="move stack" id="choice" hidden>
+      <div class="mv"><b>Break time!</b><span>Pick something fun</span></div>
+      <div class="mvb"><button class="primary" id="pickEx">Exercise</button><button id="pickGm">Mini game</button><button id="pickSk">Skip</button></div>
+    </div>
+    <div class="move stack" id="game" hidden>
+      <canvas id="gc" width="300" height="150" aria-label="Jump over the obstacles"></canvas>
+      <p class="mvn" id="gscore">Tap or press space to jump</p>
+      <div class="mvb"><button class="primary" id="gdone">Done</button></div>
+    </div>
+    <div class="controls">
+      <button class="primary" id="go">Start</button><button id="reset">Reset</button><button id="skip">Skip</button>
+    </div>
+    <div class="dots" id="dots" aria-label="Focus sessions before the long break"><i></i><i></i><i></i><i></i></div>
+    <p class="count" id="count"></p>
+  </section>
+  <section id="tutor" class="panel" hidden>
+    <div class="msgs" id="msgs" aria-live="polite">
+      <div class="empty" id="empty">
+        <p id="lead">Hey! What are you working on? I can explain things, quiz you, or just keep you company while you study.</p>
+        <div class="chips">
+          <button data-p="I need to study but I can't focus. ">Help me focus</button>
+          <button data-p="Explain this simply: ">Explain something</button>
+          <button data-p="Quiz me on: ">Quiz me</button>
+          
+        </div>
+      </div>
+    </div>
+    <p class="vmsg" id="vmsg" aria-live="polite"></p>
+    <div class="composer">
+      <textarea id="q" rows="2" placeholder="Say hi, or ask anything" aria-label="Message to your study friend"></textarea>
+      <button id="mic" aria-pressed="false">Talk</button>
+      <button class="primary" id="send">Send</button>
+    </div>
+    <label class="say" id="sayl"><input type="checkbox" id="say"> Read replies aloud</label>
+  </section>
+  <section id="list" class="panel" hidden>
+    <div class="sumbar" id="sumbar">Add tasks below to plan your session</div>
+    <div class="addrow">
+      <input id="tname" placeholder="Task, e.g. Maths worksheet" aria-label="Task name">
+      <input id="tmins" type="number" min="1" inputmode="numeric" placeholder="min" aria-label="Minutes">
+      <button class="primary" id="tadd">Add</button>
+    </div>
+    <div class="tasks" id="tasks"></div>
+  </section>
+</main>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const MODES={focus:['Focus',25],short:['Short break',5],long:['Long break',15]};
+let mode='focus',total=1500,left=1500,endAt=null,tick=null,done=0,cycle=0,ctx=null;
+const fmt=s=>String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+
+function render(){
+  const t=fmt(left);
+  $('time').textContent=t;$('mini').textContent=t;
+  document.body.dataset.mode=mode==='focus'?'focus':'break';
+  document.documentElement.style.setProperty('--left',left/total);
+  $('go').textContent=endAt?'Pause':'Start';
+  document.title=(endAt?t+' ':'')+'Study Desk';
+  document.querySelectorAll('.modes button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===mode));
+  [...$('dots').children].forEach((d,i)=>d.classList.toggle('on',i<cycle));
+  $('count').textContent=done+(done===1?' session':' sessions')+' done today'+(moves?', '+moves+(moves===1?' move break':' move breaks'):'');
+}
+function setMode(m){clearInterval(tick);tick=null;endAt=null;mode=m;total=left=MODES[m][1]*60;hideBreakUI();render()}
+function beep(){try{if(!ctx)return;const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=880;g.gain.setValueAtTime(.2,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.9);o.start();o.stop(ctx.currentTime+.9)}catch(e){}}
+function finish(){
+  const wasFocus=mode==='focus';
+  beep();
+  let next,msg;
+  if(mode==='focus'){done++;cycle++;next=cycle>=4?'long':'short';msg='Focus session done. Take a '+MODES[next][1]+' minute break and move a little.'}
+  else{if(mode==='long')cycle=0;next='focus';msg='Break over. Ready for the next focus session?'}
+  setMode(next);$('status').textContent=msg;
+  if(wasFocus)showChoice();
+}
+function update(){
+  if(!endAt)return;
+  left=Math.max(0,Math.ceil((endAt-Date.now())/1000));
+  left===0?finish():render();
+}
+$('go').onclick=()=>{
+  if(endAt){
+    update();
+    if(endAt){clearInterval(tick);tick=null;endAt=null;$('status').textContent='Paused.';render()}
+  }else{
+    try{ctx=ctx||new (window.AudioContext||window.webkitAudioContext)()}catch(e){}
+    endAt=Date.now()+left*1000;tick=setInterval(update,250);
+    $('status').textContent=mode==='focus'?'Stay on one task until the timer ends.':'Step away from the screen.';
+    render();
+  }
+};
+$('reset').onclick=()=>{setMode(mode);$('status').textContent='Ready when you are.'};
+$('skip').onclick=()=>{setMode(mode==='focus'?'short':'focus');$('status').textContent='Ready when you are.'};
+document.querySelectorAll('.modes button').forEach(b=>b.onclick=()=>{setMode(b.dataset.m);$('status').textContent='Ready when you are.'});
+document.addEventListener('visibilitychange',update);
+
+function show(t){
+  document.body.dataset.tab=t;
+  ['focus','tutor','list'].forEach(n=>{$(n).hidden=n!==t;$('tab-'+n).setAttribute('aria-selected',n===t)});
+}
+$('tab-focus').onclick=$('mini').onclick=()=>show('focus');
+$('tab-tutor').onclick=()=>show('tutor');
+$('tab-list').onclick=()=>show('list');
+
+const FRIEND="You are a warm, upbeat study friend for a student. Talk like a supportive friend, not a teacher. Help them start, stay focused and understand things: break tasks into small steps, suggest short focus sessions, and explain ideas simply and step by step, giving hints before full homework answers. You can also just chat and listen. Keep replies short and conversational, under 120 words, plain text with no lists or headings, because replies may be read aloud. You are an AI and never pretend to be a person. If the student sounds really down, overwhelmed or unsafe, be kind and encourage them to talk to a trusted adult or friend.";
+let turns=[],busy=false;
+function bubble(cls,text){const d=document.createElement('div');d.className='b '+cls;d.textContent=text;$('msgs').append(d);$('msgs').scrollTop=1e9;return d}
+async function ask(){
+  const q=$('q'),text=q.value.trim();
+  if(!text||busy)return;
+  busy=true;$('send').disabled=true;q.value='';
+  $('empty')?.remove();
+  document.querySelectorAll('.err').forEach(e=>e.remove());
+  const me=bubble('me',text);turns.push({role:'user',content:text});
+  const out=bubble('bot','Thinking…');
+  try{
+    const res=await fetch('/api/chat',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({messages:turns.slice(-11),curriculum:prof.cur,note:ctxNote()})});
+    const data=await res.json();
+    if(!res.ok||!data.text)throw 0;
+    out.textContent=data.text;turns.push({role:'assistant',content:data.text});if($('say').checked)speak(data.text);
+  }catch(e){
+    turns.pop();me.remove();q.value=text;
+    out.className='b bot err';
+    out.textContent='Your study friend could not answer. Check your connection and try again.';
+  }
+  busy=false;$('send').disabled=false;q.focus();
+}
+document.querySelectorAll('.chips button').forEach(b=>b.onclick=()=>{const q=$('q');q.value=b.dataset.p;q.focus();q.setSelectionRange(q.value.length,q.value.length)});
+$('send').onclick=ask;
+$('q').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey&&matchMedia('(pointer:fine)').matches){e.preventDefault();ask()}};
+const MOVES=[['5','push-ups','Wall push-ups work too.'],['10','jumping jacks','Keep it light.'],['10','squats','Chest up, knees over toes.'],['20s','plank','Knees down is fine.'],['10','shoulder rolls','Big slow circles, forward then back.'],['5','deep breaths','In through the nose, out slowly.'],['10','calf raises','Hold a wall if you need to.'],['30s','stretch','Reach up high, then toward your toes.'],['10','arm circles','Start small, then go big.'],['5','lunges each side','Slow and steady.'],['30s','freestyle dance','Nobody is watching.'],['10s','victory pose','Hands up, big smile.']];
+let mv=0,moves=0;
+function paintMove(){const m=MOVES[mv];$('reps').textContent=m[0];$('mvname').textContent=m[1];$('mvhint').textContent=m[2]}
+function showMove(){mv=Math.floor(Math.random()*MOVES.length);paintMove();$('move').hidden=false}
+$('mvnext').onclick=()=>{mv=(mv+1+Math.floor(Math.random()*(MOVES.length-1)))%MOVES.length;paintMove()};
+$('mvdone').onclick=()=>{moves++;$('move').hidden=true;$('status').textContent='Nice work! Enjoy the rest of your break.';render()};
+$('mvskip').onclick=()=>{$('move').hidden=true};
+function hideBreakUI(){$('move').hidden=true;$('choice').hidden=true;if(!$('game').hidden){gRun=false;cancelAnimationFrame(gRaf);removeEventListener('keydown',gKey)}$('game').hidden=true}
+function showChoice(){$('choice').hidden=false}
+$('pickEx').onclick=()=>{$('choice').hidden=true;showMove()};
+$('pickGm').onclick=()=>{$('choice').hidden=true;showGame()};
+$('pickSk').onclick=()=>{$('choice').hidden=true};
+
+let gctx,gRun=false,gRaf=null,gY,gV,gOnGround,obs,gScore,gBest=0,gSpeed,gInk,gLine;
+try{gBest=+localStorage.getItem('study-desk-best')||0}catch(e){}
+function showGame(){
+  $('game').hidden=false;
+  gctx=gctx||$('gc').getContext('2d');
+  gInk=getComputedStyle(document.body).getPropertyValue('--ink').trim();
+  gLine=getComputedStyle(document.body).getPropertyValue('--line').trim();
+  gY=110;gV=0;gOnGround=true;obs=[];gScore=0;gSpeed=3.2;gRun=true;
+  $('gscore').textContent='Score 0 · Best '+gBest;
+  addEventListener('keydown',gKey);$('gc').onpointerdown=gJump;
+  gLoop();
+}
+function gJump(){if(gOnGround&&gRun){gV=-7.2;gOnGround=false}}
+function gKey(e){if(e.code==='Space'){e.preventDefault();gJump()}}
+function endGame(){
+  gRun=false;removeEventListener('keydown',gKey);
+  if(gScore>gBest){gBest=Math.floor(gScore);try{localStorage.setItem('study-desk-best',gBest)}catch(e){}}
+  $('gscore').textContent='Game over — score '+Math.floor(gScore)+' · best '+gBest+'. Tap to try again.';
+  $('gc').onpointerdown=()=>showGame();
+}
+function gLoop(){
+  if(!gRun)return;
+  gV+=0.42;gY+=gV;if(gY>110){gY=110;gV=0;gOnGround=true}
+  if(Math.random()<0.02)obs.push({x:300,w:14+Math.random()*10});
+  obs.forEach(o=>o.x-=gSpeed);
+  if(obs.length&&obs[0].x<-20)obs.shift();
+  gScore+=0.06;gSpeed=Math.min(6.5,3.2+gScore/40);
+  const hit=obs.some(o=>o.x<58&&o.x+o.w>28&&gY>92);
+  gctx.clearRect(0,0,300,150);
+  gctx.fillStyle=gLine;gctx.fillRect(0,132,300,2);
+  gctx.fillStyle='#E08A3C';obs.forEach(o=>gctx.fillRect(o.x,132-26,o.w,26));
+  gctx.fillStyle=gInk;gctx.fillRect(28,gY,26,26);
+  $('gscore').textContent='Score '+Math.floor(gScore)+' · best '+gBest;
+  if(hit){endGame();return}
+  gRaf=requestAnimationFrame(gLoop);
+}
+$('gdone').onclick=hideBreakUI;
+
+let tasks=[],tTimerId=null,tEndAt=null,tTick=null,tLeft=0,tRang=false;
+try{tasks=JSON.parse(localStorage.getItem('study-desk-tasks')||'[]')}catch(e){}
+function saveTasks(){try{localStorage.setItem('study-desk-tasks',JSON.stringify(tasks))}catch(e){}}
+function paintTasks(){
+  const box=$('tasks');box.textContent='';
+  const left=tasks.filter(t=>!t.done).reduce((a,t)=>a+t.mins,0),open=tasks.filter(t=>!t.done).length;
+  $('sumbar').textContent=tasks.length?left+' min left across '+open+' of '+tasks.length+' task'+(tasks.length===1?'':'s'):'Add tasks below to plan your session';
+  tasks.forEach(t=>{
+    const running=t.id===tTimerId,over=running&&tLeft<0;
+    const row=document.createElement('div');row.className='task'+(t.done?' done':'')+(over?' over':'');
+    const cb=document.createElement('input');cb.type='checkbox';cb.checked=t.done;
+    cb.onchange=()=>{t.done=cb.checked;if(t.done&&running)stopTaskTimer();saveTasks();paintTasks()};
+    const name=document.createElement('span');name.className='tname';name.textContent=t.name;
+    const time=document.createElement('span');time.className='ttime';time.textContent=running?(tLeft<0?'+'+fmt(-tLeft):fmt(tLeft)):t.mins+'m';
+    const go=document.createElement('button');go.textContent=running?'Stop':'Start';go.disabled=t.done;
+    go.onclick=()=>running?stopTaskTimer():startTaskTimer(t);
+    const del=document.createElement('button');del.textContent='✕';del.setAttribute('aria-label','Delete '+t.name);
+    del.onclick=()=>{if(running)stopTaskTimer();tasks=tasks.filter(x=>x!==t);saveTasks();paintTasks()};
+    row.append(cb,name,time,go,del);box.append(row);
+  });
+}
+function startTaskTimer(t){
+  stopTaskTimer();tTimerId=t.id;tEndAt=Date.now()+t.mins*60000;tRang=false;
+  const tick2=()=>{tLeft=Math.round((tEndAt-Date.now())/1000);if(tLeft<=0&&!tRang){tRang=true;beep()}paintTasks()};
+  tTick=setInterval(tick2,1000);tick2();
+}
+function stopTaskTimer(){clearInterval(tTick);tTick=null;tTimerId=null;paintTasks()}
+$('tadd').onclick=()=>{
+  const n=$('tname').value.trim(),m=parseInt($('tmins').value,10);
+  if(!n)return;
+  tasks.push({id:Date.now()+'-'+Math.random().toString(36).slice(2,6),name:n,mins:m>0?m:15,done:false});
+  $('tname').value='';$('tmins').value='';saveTasks();paintTasks();$('tname').focus();
+};
+$('tname').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();$('tadd').click()}};
+
+
+const CURS=['ICSE','CBSE','IGCSE','International','Other'];
+const SUBJ={ICSE:['English','Maths','Physics','Chemistry','Biology','History & Civics','Geography'],CBSE:['English','Maths','Science','Social Science','Hindi'],IGCSE:['English','Maths','Physics','Chemistry','Biology','Business','Computer Science'],International:['English','Maths','Sciences','Humanities','Languages'],Other:['English','Maths','Science','Humanities','Languages']};
+let prof={cur:''},subject='',pick='';
+try{prof={...prof,...JSON.parse(localStorage.getItem('study-desk-profile')||'{}')}}catch(e){}
+if(!CURS.includes(prof.cur))prof.cur='';
+pick=prof.cur;
+function paintPick(){document.querySelectorAll('#pick button').forEach(b=>b.setAttribute('aria-pressed',b.textContent===pick))}
+function paintSubj(){
+  const box=$('subj');box.textContent='';
+  (SUBJ[prof.cur]||SUBJ.Other).forEach(n=>{
+    const b=document.createElement('button');b.textContent=n;b.setAttribute('aria-pressed',n===subject);
+    b.onclick=()=>{subject=subject===n?'':n;paintSubj()};
+    box.append(b);
+  });
+}
+function applyProfile(){
+  const l=$('lead');
+  if(l)l.textContent=prof.cur&&prof.cur!=='Other'?"Hey! What are you working on? I can explain your "+prof.cur+" topics, quiz you, or just keep you company while you study.":"Hey! What are you working on? I can explain things, quiz you, or just keep you company while you study.";
+  $('save').textContent=prof.cur?'Save':'Start studying';
+  $('me').textContent=prof.cur;paintSubj();
+}
+function enter(){$('start').hidden=true;$('app').hidden=false;show('focus')}
+function ctxNote(){return (subject?'studying '+subject+'; ':'')+(mode==='focus'?'focus session':'break')+(endAt?' running, ':' not running, ')+fmt(left)+' left'}
+document.querySelectorAll('#pick button').forEach(b=>b.onclick=()=>{pick=b.textContent;paintPick();$('msg').textContent=''});
+$('me').onclick=()=>{$('app').hidden=true;$('start').hidden=false};
+$('save').onclick=()=>{
+  if(!pick){$('msg').textContent='Choose your curriculum to continue.';return}
+  prof={cur:pick};subject='';
+  try{localStorage.setItem('study-desk-profile',JSON.stringify(prof))}catch(e){}
+  $('msg').textContent='';applyProfile();enter();
+};
+
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition,TTS='speechSynthesis' in window;
+if(!TTS)$('sayl').hidden=true;
+function unlock(){try{speechSynthesis.speak(new SpeechSynthesisUtterance(''))}catch(e){}}
+function speak(t){if(!TTS)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang=navigator.language||'en-US';speechSynthesis.speak(u)}catch(e){}}
+$('say').onchange=()=>{if(!TTS)return;$('say').checked?unlock():speechSynthesis.cancel()};
+function noVoice(){$('vmsg').textContent="Voice input isn't available in this view. Tap the microphone on your keyboard to dictate, then press Send.";$('q').focus()}
+let rec=null,listening=false;
+$('mic').onclick=()=>{
+  if(listening){rec.stop();return}
+  if(busy)return;
+  if(!SR){noVoice();return}
+  if(TTS){speechSynthesis.cancel();unlock()}
+  $('vmsg').textContent='';
+  let heard='',failed=false;
+  const wd=setTimeout(()=>{if(!listening){failed=true;noVoice()}},5000);
+  rec=new SR();rec.lang=navigator.language||'en-US';rec.interimResults=true;
+  rec.onstart=()=>{clearTimeout(wd);listening=true;$('vmsg').textContent='';$('mic').setAttribute('aria-pressed','true');$('mic').textContent='Listening…'};
+  rec.onresult=e=>{heard=Array.from(e.results).map(r=>r[0].transcript).join('');$('q').value=heard};
+  rec.onerror=e=>{
+    clearTimeout(wd);failed=true;
+    if(['not-allowed','service-not-allowed','audio-capture'].includes(e.error))noVoice();
+    else $('vmsg').textContent=e.error==='no-speech'?"I didn't catch that. Tap Talk and try again.":e.error==='network'?"Voice needs an internet connection.":"Voice didn't work. Type your message instead.";
+  };
+  rec.onend=()=>{
+    clearTimeout(wd);listening=false;$('mic').setAttribute('aria-pressed','false');$('mic').textContent='Talk';
+    if(heard.trim()){$('say').checked=TTS;ask()}
+    else if(!failed)$('vmsg').textContent="I didn't hear anything. Tap Talk and try again.";
+  };
+  try{rec.start()}catch(x){clearTimeout(wd);noVoice()}
+};
+
+paintPick();applyProfile();render();paintTasks();
+if(prof.cur)enter();
+if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+</script>
+</body>
+</html>
