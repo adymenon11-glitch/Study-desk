@@ -259,7 +259,7 @@ async function ask(){
   const me=bubble('me',text);turns.push({role:'user',content:text});
   const out=bubble('bot','Thinking…');
   try{
-    const res=await const res=await fetch('https://study-friend-api.adymenon11.workers.dev/api/chat',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({messages:turns.slice(-11),curriculum:prof.cur,note:ctxNote()})});
+    const res=await fetch('https://study-friend-api.adymenon11.workers.dev/api/chat',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({messages:turns.slice(-11),curriculum:prof.cur,note:ctxNote()})});
 
     const data=await res.json();
     if(!res.ok||!data.text)throw 0;
