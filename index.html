@@ -255,7 +255,7 @@ async function ask(){
   if(!text||busy)return;
   busy=true;$('send').disabled=true;q.value='';
   $('empty')?.remove();
-  document.querySelectorAll('.err').forEach(e=>e.remove());
+ const res=await fetch('https://study-friend-api.adymenon11.workers.dev/api/chat',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({messages:turns.slice(-11),curriculum:prof.cur,note:ctxNote()})});
   const me=bubble('me',text);turns.push({role:'user',content:text});
   const out=bubble('bot','Thinking…');
   try{
