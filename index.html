@@ -107,7 +107,48 @@ button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink);fon
 .task .tname{flex:1;text-align:left;overflow-wrap:anywhere}
 .task .ttime{color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums;flex:none}
 .task button{flex:none;background:none;border:1px solid var(--line);border-radius:8px;padding:5px 9px;font-size:13px}
-@media (prefers-reduced-motion:reduce){.time::before{transition:none}}
+
+/* Study Desk visual polish */
+:root{--shadow:0 12px 32px rgba(28,34,85,.07)}
+header{padding:18px 20px 8px}
+h1{letter-spacing:-.035em}
+.tabs{gap:9px;padding-top:10px}
+.tabs button{transition:transform .16s ease,box-shadow .16s ease,background .16s ease}
+.tabs button:hover,.controls button:hover,.chips button:hover,.pick button:hover{transform:translateY(-1px)}
+.panel{border-radius:22px}
+#app{padding-bottom:12px}
+.controls button,.composer button,.addrow button{box-shadow:0 4px 12px rgba(28,34,85,.06)}
+button.primary{box-shadow:0 6px 16px rgba(28,34,85,.12)}
+.panel:not(#focus){background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);margin-top:14px;width:calc(100% - 24px);max-width:720px;border-radius:20px}
+#tutor,#list,#habits{padding:20px}
+.habit-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.habit-top h2{margin:0 0 5px;color:var(--ink);font-size:22px;letter-spacing:-.02em}
+.habit-top p{margin:0;color:var(--muted);font-size:14px}
+.habit-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0}
+.habit-stat{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:13px;min-width:0}
+.habit-stat strong{display:block;font-size:24px;color:var(--ink);font-variant-numeric:tabular-nums}
+.habit-stat span{font-size:12px;color:var(--muted)}
+.habit-add{display:flex;gap:8px;margin:14px 0}
+.habit-add input{flex:1;min-width:0;font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:11px 12px}
+.habit-add button{border-radius:12px;border:0;padding:10px 14px;white-space:nowrap}
+.habit-grid-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px}
+.habit-grid{width:100%;border-collapse:separate;border-spacing:0;min-width:510px}
+.habit-grid th,.habit-grid td{padding:10px 8px;text-align:center;border-bottom:1px solid var(--line)}
+.habit-grid th{background:var(--bg);font-size:12px;color:var(--muted)}
+.habit-grid th:first-child,.habit-grid td:first-child{text-align:left;min-width:150px}
+.habit-grid tr:last-child td{border-bottom:0}
+.habit-name{font-weight:650;color:var(--ink);overflow-wrap:anywhere}
+.habit-delete{border:0;background:transparent;color:var(--muted);padding:5px 8px;border-radius:7px}
+.habit-check{appearance:none;width:22px;height:22px;border:2px solid var(--line);border-radius:7px;display:inline-grid;place-items:center;cursor:pointer;background:var(--surface);vertical-align:middle}
+.habit-check:checked{background:var(--hl-break);border-color:#55b99b}
+.habit-check:checked:after{content:"✓";font-size:15px;font-weight:800;color:var(--ink)}
+.habit-foot{font-size:12px;color:var(--muted);margin-top:12px}
+.habit-progress{height:7px;background:var(--line);border-radius:99px;overflow:hidden;margin-top:7px}
+.habit-progress span{display:block;height:100%;background:var(--hl-break);border-radius:99px;transition:width .2s}
+.habit-empty{padding:18px;color:var(--muted);text-align:center}
+@media(max-width:520px){header{padding-left:14px;padding-right:14px}.tabs{padding-left:12px;padding-right:12px;gap:6px}.tabs button{font-size:12px}.panel:not(#focus){width:calc(100% - 16px);padding:16px}#focus{padding-left:14px;padding-right:14px}.habit-stats{gap:6px}.habit-stat{padding:10px}.habit-stat strong{font-size:20px}.habit-add{flex-wrap:wrap}.habit-add button{width:100%}}
+
+@media (prefers-reduced-motion:reduce){.time::before{transition:none}button{transition:none!important}}
 </style>
 </head>
 <body data-tab="focus" data-mode="focus">
@@ -127,6 +168,7 @@ button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink);fon
   <button role="tab" id="tab-focus" aria-selected="true">Focus</button>
   <button role="tab" id="tab-tutor" aria-selected="false">Study friend</button>
   <button role="tab" id="tab-list" aria-selected="false">Checklist</button>
+  <button role="tab" id="tab-habits" aria-selected="false">Habits</button>
 </div>
 <main>
   
@@ -188,6 +230,19 @@ button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink);fon
     </div>
     <div class="tasks" id="tasks"></div>
   </section>
+
+  <section id="habits" class="panel" hidden>
+    <div class="habit-top"><div><h2>Your habits, your momentum</h2><p>Small wins add up. Tick each day you complete a habit.</p></div><span class="status" id="habit-week"></span></div>
+    <div class="habit-stats">
+      <div class="habit-stat"><strong id="habit-today">0/0</strong><span>Done today</span></div>
+      <div class="habit-stat"><strong id="habit-percent">0%</strong><span>This week's progress</span><div class="habit-progress"><span id="habit-bar" style="width:0%"></span></div></div>
+      <div class="habit-stat"><strong id="habit-streak">0</strong><span>Day streak</span></div>
+    </div>
+    <form class="habit-add" id="habit-form"><input id="habit-input" maxlength="70" placeholder="Add a habit, e.g. Read 10 pages" aria-label="New habit" required><button class="primary" type="submit">+ Add habit</button></form>
+    <div class="habit-grid-wrap"><table class="habit-grid"><thead><tr><th>Habit</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th><th>Sun</th></tr></thead><tbody id="habit-rows"></tbody></table></div>
+    <p class="habit-foot">Your checkmarks are saved in this browser on this device. Start with a few habits and keep it realistic.</p>
+  </section>
+  
 </main>
 </div>
 <script>
@@ -241,11 +296,12 @@ document.addEventListener('visibilitychange',update);
 
 function show(t){
   document.body.dataset.tab=t;
-  ['focus','tutor','list'].forEach(n=>{$(n).hidden=n!==t;$('tab-'+n).setAttribute('aria-selected',n===t)});
+  ['focus','tutor','list','habits'].forEach(n=>{$(n).hidden=n!==t;$('tab-'+n).setAttribute('aria-selected',n===t)});
 }
 $('tab-focus').onclick=$('mini').onclick=()=>show('focus');
 $('tab-tutor').onclick=()=>show('tutor');
 $('tab-list').onclick=()=>show('list');
+$('tab-habits').onclick=()=>show('habits');
 
 const FRIEND="You are a warm, upbeat study friend for a student. Talk like a supportive friend, not a teacher. Help them start, stay focused and understand things: break tasks into small steps, suggest short focus sessions, and explain ideas simply and step by step, giving hints before full homework answers. You can also just chat and listen. Keep replies short and conversational, under 120 words, plain text with no lists or headings, because replies may be read aloud. You are an AI and never pretend to be a person. If the student sounds really down, overwhelmed or unsafe, be kind and encourage them to talk to a trusted adult or friend.";
 let turns=[],busy=false;
@@ -255,19 +311,19 @@ async function ask(){
   if(!text||busy)return;
   busy=true;$('send').disabled=true;q.value='';
   $('empty')?.remove();
- const res=await fetch('https://study-friend-api.adymenon11.workers.dev/api/chat',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({messages:turns.slice(-11),curriculum:prof.cur,note:ctxNote()})});
   const me=bubble('me',text);turns.push({role:'user',content:text});
   const out=bubble('bot','Thinking…');
   try{
     const res=await fetch('https://study-friend-api.adymenon11.workers.dev/api/chat',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({messages:turns.slice(-11),curriculum:prof.cur,note:ctxNote()})});
-
     const data=await res.json();
-    if(!res.ok||!data.text)throw 0;
-    out.textContent=data.text;turns.push({role:'assistant',content:data.text});if($('say').checked)speak(data.text);
+    const answer=data.reply||data.text;
+    if(!res.ok||!answer)throw new Error(data.error||'Chat request failed');
+    out.textContent=answer;turns.push({role:'assistant',content:answer});if($('say').checked)speak(answer);
   }catch(e){
-    turns.pop();me.remove();q.value=text;
+    turns.pop();me.remove();
     out.className='b bot err';
     out.textContent='Your study friend could not answer. Check your connection and try again.';
+    q.value=text;
   }
   busy=false;$('send').disabled=false;q.focus();
 }
@@ -360,6 +416,41 @@ $('tadd').onclick=()=>{
 };
 $('tname').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();$('tadd').click()}};
 
+
+
+/* Weekly habit tracker */
+const HABIT_KEY='study-desk-habits-v1';
+let habits=[];
+try{habits=JSON.parse(localStorage.getItem(HABIT_KEY)||'[]')}catch(e){habits=[]}
+if(!Array.isArray(habits))habits=[];
+const habitSave=()=>{try{localStorage.setItem(HABIT_KEY,JSON.stringify(habits))}catch(e){}};
+const habitDate=d=>{const x=new Date(d);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')};
+const habitMonday=()=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-(d.getDay()+6)%7);return d};
+function renderHabits(){
+ const monday=habitMonday(),days=Array.from({length:7},(_,i)=>{const d=new Date(monday);d.setDate(d.getDate()+i);return d});
+ $('habit-week').textContent=days[0].toLocaleDateString(undefined,{month:'short',day:'numeric'})+' – '+days[6].toLocaleDateString(undefined,{month:'short',day:'numeric'});
+ const rows=$('habit-rows');rows.textContent='';
+ if(!habits.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=8;td.className='habit-empty';td.textContent='Add your first habit above to start your week.';tr.append(td);rows.append(tr)}
+ habits.forEach((h,idx)=>{
+  const tr=document.createElement('tr'),name=document.createElement('td');
+  const label=document.createElement('span');label.className='habit-name';label.textContent=h.name;
+  const del=document.createElement('button');del.className='habit-delete';del.type='button';del.textContent='×';del.setAttribute('aria-label','Remove '+h.name);
+  del.onclick=()=>{habits.splice(idx,1);habitSave();renderHabits()};
+  name.append(label,del);tr.append(name);
+  days.forEach(d=>{const td=document.createElement('td'),key=habitDate(d),cb=document.createElement('input');cb.type='checkbox';cb.className='habit-check';cb.checked=!!h.done?.[key];cb.setAttribute('aria-label',h.name+' on '+d.toLocaleDateString());cb.onchange=()=>{h.done=h.done||{};if(cb.checked)h.done[key]=true;else delete h.done[key];habitSave();renderHabits()};td.append(cb);tr.append(td)});
+  rows.append(tr);
+ });
+ const total=habits.length*7,doneCount=habits.reduce((n,h)=>n+days.filter(d=>h.done?.[habitDate(d)]).length,0);
+ const today=habitDate(new Date()),todayDone=habits.filter(h=>h.done?.[today]).length;
+ $('habit-today').textContent=todayDone+'/'+habits.length;
+ const pct=total?Math.round(doneCount/total*100):0;
+ $('habit-percent').textContent=pct+'%';$('habit-bar').style.width=pct+'%';
+ let streak=0,d=new Date();d.setHours(0,0,0,0);
+ while(streak<365&&habits.length){const key=habitDate(d);if(!habits.some(h=>h.done?.[key]))break;streak++;d.setDate(d.getDate()-1)}
+ $('habit-streak').textContent=streak;
+}
+$('habit-form').onsubmit=e=>{e.preventDefault();const input=$('habit-input'),name=input.value.trim();if(!name)return;if(habits.some(h=>h.name.toLowerCase()===name.toLowerCase())){input.setCustomValidity('That habit already exists.');input.reportValidity();input.setCustomValidity('');return}habits.push({name,done:{}});habitSave();input.value='';renderHabits();input.focus()};
+renderHabits();
 
 const CURS=['ICSE','CBSE','IGCSE','International','Other'];
 const SUBJ={ICSE:['English','Maths','Physics','Chemistry','Biology','History & Civics','Geography'],CBSE:['English','Maths','Science','Social Science','Hindi'],IGCSE:['English','Maths','Physics','Chemistry','Biology','Business','Computer Science'],International:['English','Maths','Sciences','Humanities','Languages'],Other:['English','Maths','Science','Humanities','Languages']};
