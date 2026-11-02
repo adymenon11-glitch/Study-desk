@@ -322,7 +322,8 @@ async function ask(){
   }catch(e){
     turns.pop();me.remove();
     out.className='b bot err';
-    out.textContent='Your study friend could not answer. Check your connection and try again.';
+   console.error('Study Friend error:', e);
+out.textContent = 'Error: ' + e.message;
     q.value=text;
   }
   busy=false;$('send').disabled=false;q.focus();
